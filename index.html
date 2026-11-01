@@ -122,6 +122,12 @@
 </div>
 
 <!-- =========================  OZNÁMENÍ (dovolená / zástupce)  ========================= -->
+<div class="notice" id="oznameni" hidden>
+    <div class="container notice-inner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <p>Ordinace bude <strong>zavřena <span id="oznameni-termin"></span></strong> Zastupuje MUDr.&nbsp;Poloni, poliklinika Krnov, tel.&nbsp;<a href="tel:+420554620025">554&nbsp;620&nbsp;025</a>.</p>
+    </div>
+  </div>
 <!-- =========================  HERO  ========================= -->
 <main>
 <section class="hero" id="home">
@@ -650,6 +656,32 @@ lightbox.addEventListener('touchend', function (e) {
         else prevImage();
     }
 });
+
+// Oznámení o dovolené: přepínač a termín nastavuje lékař v Sanity Studiu
+(function loadNotice() {
+  const notice = document.getElementById('oznameni');
+  const dateEl = document.getElementById('oznameni-termin');
+  if (!notice || !dateEl) return;
+
+  const query = '*[_id == "oznameni"][0]{zobrazit, termin}';
+  const url =
+    'https://k4vzu0bd.apicdn.sanity.io/v2025-02-19/data/query/production?query=' +
+    encodeURIComponent(query);
+
+  fetch(url)
+    .then((response) => {
+      if (!response.ok) throw new Error('Sanity odpověděla ' + response.status);
+      return response.json();
+    })
+    .then(({ result }) => {
+      if (!result || !result.zobrazit || !result.termin) return;
+      dateEl.textContent = result.termin;
+      notice.hidden = false;
+    })
+    .catch(() => {
+      // Sanity neodpovídá → lišta zůstane skrytá, zbytek webu funguje
+    });
+})();
 </script>
 
 </body>

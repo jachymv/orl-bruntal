@@ -325,7 +325,7 @@ header {
 
 /* ---------- OZNÁMENÍ (dovolená / zástupce) ---------- */
 .notice {
-    background: #fdf4e5;                 /* teplá, jemně žlutá – ladí s papírovým podkladem */
+    background: #fdf4e5;                
     border-bottom: 1px solid #f0dcb4;
     color: #6f5320;
 }
@@ -354,6 +354,8 @@ header {
     text-decoration: underline;
     font-weight: 600;
 }
+
+.notice[hidden] { display: none; }
 
 /* ---------- 6. HERO ---------- */
 .hero {
