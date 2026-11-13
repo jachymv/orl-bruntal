@@ -125,7 +125,7 @@
 <div class="notice" id="oznameni" hidden>
     <div class="container notice-inner">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      <p>Ordinace bude <strong>zavřena <span id="oznameni-termin"></span></strong> Zastupuje MUDr.&nbsp;Poloni, poliklinika Krnov, tel.&nbsp;<a href="tel:+420554620025">554&nbsp;620&nbsp;025</a>.</p>
+        <p id="oznameni-text"></p>    
     </div>
   </div>
 <!-- =========================  HERO  ========================= -->
@@ -657,13 +657,13 @@ lightbox.addEventListener('touchend', function (e) {
     }
 });
 
-// Oznámení o dovolené: přepínač a termín nastavuje lékař v Sanity Studiu
+// Oznámení o dovolené: přepínač a text nastavuje lékař v Sanity Studiu
 (function loadNotice() {
   const notice = document.getElementById('oznameni');
-  const dateEl = document.getElementById('oznameni-termin');
-  if (!notice || !dateEl) return;
+  const textEl = document.getElementById('oznameni-text');
+  if (!notice || !textEl) return;
 
-  const query = '*[_id == "oznameni"][0]{zobrazit, termin}';
+  const query = '*[_id == "oznameni"][0]{zobrazit, text}';
   const url =
     'https://k4vzu0bd.apicdn.sanity.io/v2025-02-19/data/query/production?query=' +
     encodeURIComponent(query);
@@ -674,13 +674,33 @@ lightbox.addEventListener('touchend', function (e) {
       return response.json();
     })
     .then(({ result }) => {
-      if (!result || !result.zobrazit || !result.termin) return;
-      dateEl.textContent = result.termin;
+      if (!result || !result.zobrazit || !result.text) return;
+      renderWithPhoneLinks(textEl, result.text.trim());
       notice.hidden = false;
     })
     .catch(() => {
       // Sanity neodpovídá → lišta zůstane skrytá, zbytek webu funguje
     });
+
+  // Vloží text a z telefonních čísel (554 620 025, +420 554 620 025) udělá odkazy tel:
+  function renderWithPhoneLinks(element, text) {
+    const phonePattern = /(?:\+420\s?)?\b\d{3}\s?\d{3}\s?\d{3}\b/g;
+    let lastIndex = 0;
+
+    for (const match of text.matchAll(phonePattern)) {
+      element.append(text.slice(lastIndex, match.index));
+
+      const digits = match[0].replace(/\D/g, '').slice(-9);
+      const link = document.createElement('a');
+      link.href = 'tel:+420' + digits;
+      link.textContent = match[0].replace(/\s/g, '\u00a0'); // číslo se nerozdělí na dva řádky
+      element.append(link);
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    element.append(text.slice(lastIndex));
+  }
 })();
 </script>
 
