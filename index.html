@@ -674,8 +674,10 @@ lightbox.addEventListener('touchend', function (e) {
       return response.json();
     })
     .then(({ result }) => {
-      if (!result || !result.zobrazit || !result.text) return;
-      renderWithPhoneLinks(textEl, result.text.trim());
+      if (!result || result.zobrazit !== true || typeof result.text !== 'string') return;
+      const text = result.text.trim();
+      if (!text) return; // jen mezery → lištu nezobrazovat
+      renderWithPhoneLinks(textEl, text);
       notice.hidden = false;
     })
     .catch(() => {
@@ -684,7 +686,7 @@ lightbox.addEventListener('touchend', function (e) {
 
   // Vloží text a z telefonních čísel (554 620 025, +420 554 620 025) udělá odkazy tel:
   function renderWithPhoneLinks(element, text) {
-    const phonePattern = /(?:\+420\s?)?\b\d{3}\s?\d{3}\s?\d{3}\b/g;
+    const phonePattern = /(?:\+420[  ]*|\b)\d{3}[  ]*\d{3}[  ]*\d{3}\b/g;
     let lastIndex = 0;
 
     for (const match of text.matchAll(phonePattern)) {
